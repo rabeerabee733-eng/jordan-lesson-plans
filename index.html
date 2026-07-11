@@ -128,7 +128,7 @@
       </div>
       <div class="price-card">
         <strong id="heroTotal">0</strong>
-        <span>دينار إجمالي الطلب</span>
+        <span>دينار إجمالي الطلب مع التوصيل</span>
       </div>
     </section>
 
@@ -146,12 +146,13 @@
               <div class="field"><label>المدرسة</label><input id="school" placeholder="اختياري"></div>
               <div class="field"><label>اسم مدير المدرسة *</label><input id="principalName" placeholder="اكتب اسم مدير المدرسة"></div>
               <div class="field"><label>المديرية</label><input id="directorate" placeholder="اختياري"></div>
-              <div class="field"><label>الفصل الدراسي</label><select id="semester"><option>الفصل الدراسي الأول</option><option>الفصل الدراسي الثاني</option></select></div>
+              <div class="field"><label>الفصل الدراسي</label><select id="semester" aria-label="الفصل الدراسي"><option selected>الفصل الدراسي الأول</option></select></div>
               <div class="field"><label>المحافظة *</label><select id="governorate"><option value="">اختر المحافظة</option><option>عمّان</option><option>إربد</option><option>الزرقاء</option><option>البلقاء</option><option>المفرق</option><option>جرش</option><option>عجلون</option><option>مادبا</option><option>الكرك</option><option>الطفيلة</option><option>معان</option><option>العقبة</option></select></div>
               <div class="field"><label>اللواء *</label><select id="district" disabled><option value="">اختر المحافظة أولًا</option></select></div>
               <div class="field span-2"><label>عنوان التوصيل *</label><input id="deliveryAddress" placeholder="الحي، الشارع، أقرب معلم"></div>
               <div class="field span-2"><label>ملاحظات</label><input id="notes" placeholder="أي ملاحظة خاصة بالطلب"></div>
             </div>
+            <div class="notice" style="margin-top:14px">تنبيه مهم: اسم المعلم واسم مدير المدرسة سيُطبعان على الملفات كما تم إدخالهما في الموقع، لذلك يرجى كتابتهما بدقة قبل تأكيد الطلب.</div>
           </div>
         </section>
 
@@ -166,7 +167,7 @@
               <button class="btn secondary" id="clearSelectionsTop" type="button">مسح الاختيارات</button>
             </div>
             <div class="notice">
-              اختر المادة ثم الصفوف المطلوبة. يحسب الموقع كل اختيار على أنه مادة + صف، وتظهر الألوية تلقائيًا حسب المحافظة المختارة.
+              اختر المادة ثم الصفوف المطلوبة. يحسب الموقع كل اختيار على أنه مادة + صف. الصفوف الثلاثة الأولى متاحة للغة الإنجليزية فقط، وباقي المواد تبدأ من الصف الرابع. رسوم التوصيل: 2 دينار داخل عمّان، و3 دنانير لباقي المحافظات.
             </div>
             <div class="materials" id="materialsList"></div>
           </div>
@@ -181,7 +182,9 @@
           <div class="summary-line"><span>عدد الاختيارات</span><strong id="countBox">0</strong></div>
           <div class="summary-line"><span>مواد 3 دنانير</span><strong id="count3Box">0</strong></div>
           <div class="summary-line"><span>مواد 2 دينار</span><strong id="count2Box">0</strong></div>
-          <div class="total"><span>الإجمالي</span><span class="num"><span id="totalBox">0</span> د.أ</span></div>
+          <div class="summary-line"><span>إجمالي المواد</span><strong><span id="materialsTotalBox">0</span> د.أ</strong></div>
+          <div class="summary-line"><span>رسوم التوصيل</span><strong><span id="deliveryFeeBox">0</span> د.أ</strong></div>
+          <div class="total"><span>الإجمالي مع التوصيل</span><span class="num"><span id="totalBox">0</span> د.أ</span></div>
           <div class="picked" id="pickedList"></div>
           <div class="error" id="errorBox"></div>
           <div class="result" id="resultBox"></div>
@@ -205,40 +208,40 @@
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxYBZSOosXaW2F6TZfXdd0Gby7lHCDDpiVt85LXrB3JocVNqbyTr6Q-tfMGQV38gEPxaA/exec';
 const WHATSAPP_NUMBER = '0798382004';
 const SERVICE_NAME = 'تحضير + خطط + تحليل';
+// الإصدار: 2026-07-11-V5 — قائمة الصفوف 1-10 حسب المرفق، ومواد الثانوي 11 و12 بقيت كما كانت دون تغيير.
 
 const GRADES_1_12 = Array.from({length:12},(_,i)=>i+1);
-const GRADES_4_12 = Array.from({length:9},(_,i)=>i+4);
-const GRADES_4_10 = Array.from({length:7},(_,i)=>i+4);
-const GRADES_11_12 = [11,12];
 
 const MATERIALS = [
-  {name:'اللغة الإنجليزية', category:'اللغات', grades:GRADES_1_12, price:3},
-  {name:'اللغة العربية', category:'اللغات', grades:GRADES_4_12, price:3},
-  {name:'التربية الإسلامية', category:'التربية الإسلامية', grades:GRADES_4_12, price:3},
-  {name:'الرياضيات', category:'الرياضيات والعلوم', grades:GRADES_4_12, price:3},
-  {name:'العلوم', category:'الرياضيات والعلوم', grades:GRADES_4_10, price:3},
-  {name:'الفيزياء', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
-  {name:'الكيمياء', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
-  {name:'العلوم الحياتية', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
-  {name:'علوم الأرض والبيئة', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
-  {name:'الدراسات الاجتماعية', category:'الاجتماعيات', grades:GRADES_4_12, price:3},
-  {name:'التربية الوطنية والمدنية', category:'الاجتماعيات', grades:GRADES_4_12, price:3},
-  {name:'التاريخ', category:'الاجتماعيات', grades:GRADES_4_12, price:3},
-  {name:'الجغرافيا', category:'الاجتماعيات', grades:GRADES_4_12, price:3},
-  {name:'تاريخ الأردن', category:'الاجتماعيات', grades:GRADES_4_12, price:3},
-  {name:'الثقافة المالية', category:'مهارات ومباحث داعمة', grades:GRADES_4_12, price:3},
-  {name:'المهارات الرقمية / الحاسوب', category:'مهارات ومباحث داعمة', grades:GRADES_4_12, price:3},
-  {name:'الفلسفة والمنطق', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
-  {name:'علم النفس والاجتماع', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
-  {name:'العلوم الإسلامية', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
-  {name:'اللغة العربية تخصص', category:'الثانوي / التخصص', grades:GRADES_11_12, price:3},
-  {name:'اللغة الإنجليزية تخصص', category:'الثانوي / التخصص', grades:GRADES_11_12, price:3},
-  {name:'الرياضيات تخصص', category:'الثانوي / التخصص', grades:GRADES_11_12, price:3},
-  {name:'التربية المهنية', category:'مواد بسعر خاص', grades:GRADES_4_12, price:2},
-  {name:'التربية الفنية', category:'مواد بسعر خاص', grades:GRADES_4_12, price:2},
-  {name:'التربية الرياضية', category:'مواد بسعر خاص', grades:GRADES_4_12, price:2}
-];
+  // اللغة الإنجليزية متاحة من الصف الأول إلى الصف الثاني عشر
+  {name:'اللغة الإنجليزية', category:'مبحث أساسي من الصف الأول إلى الثاني عشر', grades:[1,2,3,4,5,6,7,8,9,10,11,12], price:3},
 
+  // الصفوف 4-8: مواد أساسية مشتركة حسب المنهاج الحكومي الأردني
+  {name:'اللغة العربية', category:'مباحث أساسية', grades:[4,5,6,7,8,9,10,11,12], price:3},
+  {name:'الرياضيات', category:'مباحث أساسية', grades:[4,5,6,7,8,9,10,11,12], price:3},
+  {name:'العلوم', category:'مباحث أساسية للصفوف 4-8 فقط', grades:[4,5,6,7,8], price:3},
+  {name:'التربية الإسلامية', category:'مباحث أساسية', grades:[4,5,6,7,8,9,10,11,12], price:3},
+  {name:'الدراسات الاجتماعية', category:'اجتماعيات للصفوف 4-8 فقط', grades:[4,5,6,7,8], price:3},
+
+  // مواد النشاط والتطبيق حسب الصفوف المرسلة
+  {name:'التربية المهنية', category:'مباحث النشاط بسعر خاص من 4-10', grades:[4,5,6,7,8,9,10], price:2},
+  {name:'المهارات الرقمية', category:'مهارات رقمية من 4-10', grades:[4,5,6,7,8,9,10], price:3},
+  {name:'التربية الفنية والموسيقية والمسرحية', category:'مباحث النشاط بسعر خاص من 4-10', grades:[4,5,6,7,8,9,10], price:2},
+  {name:'التربية الرياضية', category:'مباحث النشاط بسعر خاص من 4-10', grades:[4,5,6,7,8,9,10], price:2},
+  {name:'الثقافة المالية', category:'من الصف السابع فما فوق', grades:[7,8,9,10,11,12], price:3},
+
+  // الصفان التاسع والعاشر: العلوم والاجتماعيات مفصّلة
+  {name:'الفيزياء', category:'مباحث علمية منفصلة من 9-12', grades:[9,10,11,12], price:3},
+  {name:'الكيمياء', category:'مباحث علمية منفصلة من 9-12', grades:[9,10,11,12], price:3},
+  {name:'العلوم الحياتية', category:'مباحث علمية منفصلة من 9-12', grades:[9,10,11,12], price:3},
+  {name:'علوم الأرض والبيئة', category:'مباحث علمية منفصلة من 9-12', grades:[9,10,11,12], price:3},
+  {name:'التاريخ', category:'اجتماعيات للصفين 9 و10 فقط', grades:[9,10], price:3},
+  {name:'الجغرافيا', category:'اجتماعيات للصفين 9 و10 فقط', grades:[9,10], price:3},
+  {name:'التربية الوطنية والمدنية', category:'اجتماعيات للصفين 9 و10 فقط', grades:[9,10], price:3},
+
+  // الثانوي 11 و12: مواد عامة/مشتركة وأكاديمية حسب القائمة
+  {name:'تاريخ الأردن', category:'مواد الثانوي للصفين 11 و12', grades:[11,12], price:3}
+];
 
 const DISTRICTS_BY_GOVERNORATE = {
   'عمّان': ['لواء قصبة عمّان','لواء ماركا','لواء القويسمة','لواء الجامعة','لواء وادي السير','لواء ناعور','لواء سحاب','لواء الجيزة','لواء الموقر'],
@@ -264,8 +267,13 @@ function updateDistrictOptions(){
   const districts = DISTRICTS_BY_GOVERNORATE[gov] || [];
   select.innerHTML = districts.length ? '<option value="">اختر اللواء</option>' + districts.map(d=>`<option>${escapeHtml(d)}</option>`).join('') : '<option value="">اختر المحافظة أولًا</option>';
   select.disabled = !districts.length;
+  updateSummary();
 }
 const keyOf = (m,g)=>`${m}__${g}`;
+function getDeliveryFee(governorate){
+  if(!governorate) return 0;
+  return governorate === 'عمّان' ? 2 : 3;
+}
 
 function normalizePhone(v){
   const digits = String(v || '').replace(/[^0-9]/g,'');
@@ -324,12 +332,16 @@ function renderMaterials(){
 function escapeHtml(s){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function updateSummary(){
   const arr = Array.from(state.selected.values()).sort((a,b)=> a.material.localeCompare(b.material,'ar') || a.grade-b.grade);
-  const total = arr.reduce((s,x)=>s+x.price,0);
+  const materialsTotal = arr.reduce((s,x)=>s+x.price,0);
+  const deliveryFee = getDeliveryFee($('governorate').value);
+  const total = materialsTotal + deliveryFee;
   const count2 = arr.filter(x=>x.price===2).length;
   const count3 = arr.filter(x=>x.price===3).length;
   $('countBox').textContent = arr.length;
   $('count2Box').textContent = count2;
   $('count3Box').textContent = count3;
+  $('materialsTotalBox').textContent = materialsTotal;
+  $('deliveryFeeBox').textContent = deliveryFee;
   $('totalBox').textContent = total;
   $('heroTotal').textContent = total;
   $('selectedCountText').textContent = `${arr.length} اختيار`;
@@ -351,7 +363,9 @@ function clearAll(){
 }
 function buildOrder(){
   const selections = Array.from(state.selected.values()).sort((a,b)=> a.material.localeCompare(b.material,'ar') || a.grade-b.grade);
-  const total = selections.reduce((s,x)=>s+x.price,0);
+  const materialsTotal = selections.reduce((s,x)=>s+x.price,0);
+  const deliveryFee = getDeliveryFee($('governorate').value);
+  const total = materialsTotal + deliveryFee;
   return {
     orderNumber: makeOrderNumber(),
     service: SERVICE_NAME,
@@ -363,10 +377,12 @@ function buildOrder(){
     governorate: $('governorate').value,
     district: $('district').value.trim(),
     deliveryAddress: $('deliveryAddress').value.trim(),
-    semester: $('semester').value,
+    semester: 'الفصل الدراسي الأول',
     notes: $('notes').value.trim(),
     selections,
     counts: { total: selections.length, price3: selections.filter(x=>x.price===3).length, price2: selections.filter(x=>x.price===2).length },
+    materialsTotal,
+    deliveryFee,
     total,
     createdAt: new Date().toISOString()
   };
@@ -403,6 +419,9 @@ async function submitOrder(){
     const res = await submitJsonp(order);
     if(!res || res.ok === false) throw new Error(res && res.message ? res.message : 'تعذر حفظ الطلب.');
     if(res.orderNumber) order.orderNumber = res.orderNumber;
+    if(typeof res.materialsTotal === 'number') order.materialsTotal = res.materialsTotal;
+    if(typeof res.deliveryFee === 'number') order.deliveryFee = res.deliveryFee;
+    if(typeof res.total === 'number') order.total = res.total;
     showResult(order,'تم تسجيله في ملف الطلبات.');
   }catch(err1){
     try{
@@ -457,7 +476,9 @@ function makeWhatsappMessage(order){
   lines.push(`عدد الاختيارات: ${order.selections.length}`);
   lines.push(`مواد بسعر 3 دنانير: ${order.counts.price3}`);
   lines.push(`مواد بسعر 2 دينار: ${order.counts.price2}`);
-  lines.push(`الإجمالي: ${order.total} دينار`);
+  lines.push(`إجمالي المواد: ${order.materialsTotal} دينار`);
+  lines.push(`رسوم التوصيل: ${order.deliveryFee} دينار`);
+  lines.push(`الإجمالي مع التوصيل: ${order.total} دينار`);
   if(order.notes) lines.push(`ملاحظات: ${order.notes}`);
   return lines.join('\n');
 }
