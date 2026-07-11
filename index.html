@@ -77,7 +77,7 @@
     .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold-2);box-shadow:0 0 0 3px rgba(244,212,119,.12)}
     textarea{resize:vertical;min-height:48px}
     .span-2{grid-column:span 2}.span-4{grid-column:span 4}
-    .toolbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;margin-top:2px}
+    .toolbar{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-top:2px}
     .search{position:relative}
     .search input{padding-right:40px}
     .search:before{content:"⌕";position:absolute;right:14px;top:35px;color:var(--gold-2);font-size:22px;font-weight:900}
@@ -122,18 +122,9 @@
 <body>
   <main class="wrap" id="app">
     <section class="hero">
-      <div class="logo" aria-label="شعار"><div class="mark">ق</div></div>
+      <div class="logo" aria-label="شعار"><div class="mark"></div></div>
       <div>
         <h1>حجز التحضير الإلكتروني</h1>
-        <p>تحضير + خطط + تحليل لجميع المواد والصفوف باستثناء تخصص معلم الصف</p>
-        <div class="hero-badges">
-          <span class="badge">تحضير + خطط + تحليل</span>
-          <span class="badge">باستثناء تخصص معلم الصف</span>
-          <span class="badge">3 دنانير للمواد الأساسية</span>
-          <span class="badge">2 دينار: المهنية والفنية والرياضية</span>
-          <span class="badge">الإنجليزية من الصف الأول إلى 12</span>
-          <span class="badge">مواد الثانوي للصفين 11 و12 فقط</span>
-        </div>
       </div>
       <div class="price-card">
         <strong id="heroTotal">0</strong>
@@ -153,11 +144,12 @@
               <div class="field"><label>اسم المعلم/المعلمة *</label><input id="teacherName" autocomplete="name" placeholder="اكتب الاسم الكامل"></div>
               <div class="field"><label>رقم الهاتف *</label><input id="phone" inputmode="tel" placeholder="07xxxxxxxx"></div>
               <div class="field"><label>المدرسة</label><input id="school" placeholder="اختياري"></div>
+              <div class="field"><label>اسم مدير المدرسة *</label><input id="principalName" placeholder="اكتب اسم مدير المدرسة"></div>
               <div class="field"><label>المديرية</label><input id="directorate" placeholder="اختياري"></div>
               <div class="field"><label>الفصل الدراسي</label><select id="semester"><option>الفصل الدراسي الأول</option><option>الفصل الدراسي الثاني</option></select></div>
-              <div class="field"><label>المحافظة</label><select id="governorate"><option value="">اختر المحافظة</option><option>عمّان</option><option>إربد</option><option>الزرقاء</option><option>البلقاء</option><option>المفرق</option><option>جرش</option><option>عجلون</option><option>مادبا</option><option>الكرك</option><option>الطفيلة</option><option>معان</option><option>العقبة</option></select></div>
-              <div class="field"><label>اللواء</label><input id="district" placeholder="مثال: لواء الجامعة"></div>
-              <div class="field span-2"><label>عنوان التوصيل</label><input id="deliveryAddress" placeholder="الحي، الشارع، أقرب معلم"></div>
+              <div class="field"><label>المحافظة *</label><select id="governorate"><option value="">اختر المحافظة</option><option>عمّان</option><option>إربد</option><option>الزرقاء</option><option>البلقاء</option><option>المفرق</option><option>جرش</option><option>عجلون</option><option>مادبا</option><option>الكرك</option><option>الطفيلة</option><option>معان</option><option>العقبة</option></select></div>
+              <div class="field"><label>اللواء *</label><select id="district" disabled><option value="">اختر المحافظة أولًا</option></select></div>
+              <div class="field span-2"><label>عنوان التوصيل *</label><input id="deliveryAddress" placeholder="الحي، الشارع، أقرب معلم"></div>
               <div class="field span-2"><label>ملاحظات</label><input id="notes" placeholder="أي ملاحظة خاصة بالطلب"></div>
             </div>
           </div>
@@ -171,11 +163,10 @@
           <div class="body">
             <div class="toolbar">
               <div class="field search"><label>بحث عن مادة</label><input id="searchInput" placeholder="مثال: رياضيات، إنجليزي، فيزياء..."></div>
-              <button class="btn secondary" id="selectEnglishAll" type="button">اختيار الإنجليزية 1–12</button>
               <button class="btn secondary" id="clearSelectionsTop" type="button">مسح الاختيارات</button>
             </div>
             <div class="notice">
-              تظهر اللغة الإنجليزية من الصف الأول حتى الثاني عشر. أما باقي مواد المنهاج فتظهر من الصف الرابع حتى الثاني عشر. مواد الثانوي الخاصة تظهر للصفين الحادي عشر والثاني عشر فقط. المواد المهنية والفنية والرياضية بسعر 2 دينار لكل صف، وباقي المواد بسعر 3 دنانير.
+              اختر المادة ثم الصفوف المطلوبة. يحسب الموقع كل اختيار على أنه مادة + صف، وتظهر الألوية تلقائيًا حسب المحافظة المختارة.
             </div>
             <div class="materials" id="materialsList"></div>
           </div>
@@ -198,7 +189,6 @@
             <button class="btn" type="button" id="submitBtn">تأكيد الحجز وحفظ الطلب</button>
             <button class="btn whatsapp hidden" type="button" id="whatsappBtn">إرسال التفاصيل عبر واتساب</button>
             <button class="btn blue hidden" type="button" id="copyOrderBtn">نسخ رقم الطلب</button>
-            <button class="btn secondary" type="button" id="printBtn">طباعة / حفظ PDF</button>
             <button class="btn danger" type="button" id="clearAllBtn">طلب جديد</button>
           </div>
         </div>
@@ -218,6 +208,7 @@ const SERVICE_NAME = 'تحضير + خطط + تحليل';
 
 const GRADES_1_12 = Array.from({length:12},(_,i)=>i+1);
 const GRADES_4_12 = Array.from({length:9},(_,i)=>i+4);
+const GRADES_4_10 = Array.from({length:7},(_,i)=>i+4);
 const GRADES_11_12 = [11,12];
 
 const MATERIALS = [
@@ -225,11 +216,11 @@ const MATERIALS = [
   {name:'اللغة العربية', category:'اللغات', grades:GRADES_4_12, price:3},
   {name:'التربية الإسلامية', category:'التربية الإسلامية', grades:GRADES_4_12, price:3},
   {name:'الرياضيات', category:'الرياضيات والعلوم', grades:GRADES_4_12, price:3},
-  {name:'العلوم', category:'الرياضيات والعلوم', grades:GRADES_4_12, price:3},
-  {name:'الفيزياء', category:'الرياضيات والعلوم', grades:GRADES_4_12, price:3},
-  {name:'الكيمياء', category:'الرياضيات والعلوم', grades:GRADES_4_12, price:3},
-  {name:'العلوم الحياتية', category:'الرياضيات والعلوم', grades:GRADES_4_12, price:3},
-  {name:'علوم الأرض والبيئة', category:'الرياضيات والعلوم', grades:GRADES_4_12, price:3},
+  {name:'العلوم', category:'الرياضيات والعلوم', grades:GRADES_4_10, price:3},
+  {name:'الفيزياء', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
+  {name:'الكيمياء', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
+  {name:'العلوم الحياتية', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
+  {name:'علوم الأرض والبيئة', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
   {name:'الدراسات الاجتماعية', category:'الاجتماعيات', grades:GRADES_4_12, price:3},
   {name:'التربية الوطنية والمدنية', category:'الاجتماعيات', grades:GRADES_4_12, price:3},
   {name:'التاريخ', category:'الاجتماعيات', grades:GRADES_4_12, price:3},
@@ -237,9 +228,9 @@ const MATERIALS = [
   {name:'تاريخ الأردن', category:'الاجتماعيات', grades:GRADES_4_12, price:3},
   {name:'الثقافة المالية', category:'مهارات ومباحث داعمة', grades:GRADES_4_12, price:3},
   {name:'المهارات الرقمية / الحاسوب', category:'مهارات ومباحث داعمة', grades:GRADES_4_12, price:3},
-  {name:'الفلسفة والمنطق', category:'الثانوي', grades:GRADES_11_12, price:3},
-  {name:'علم النفس والاجتماع', category:'الثانوي', grades:GRADES_11_12, price:3},
-  {name:'العلوم الإسلامية', category:'الثانوي', grades:GRADES_11_12, price:3},
+  {name:'الفلسفة والمنطق', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
+  {name:'علم النفس والاجتماع', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
+  {name:'العلوم الإسلامية', category:'مواد الثانوي', grades:GRADES_11_12, price:3},
   {name:'اللغة العربية تخصص', category:'الثانوي / التخصص', grades:GRADES_11_12, price:3},
   {name:'اللغة الإنجليزية تخصص', category:'الثانوي / التخصص', grades:GRADES_11_12, price:3},
   {name:'الرياضيات تخصص', category:'الثانوي / التخصص', grades:GRADES_11_12, price:3},
@@ -248,9 +239,32 @@ const MATERIALS = [
   {name:'التربية الرياضية', category:'مواد بسعر خاص', grades:GRADES_4_12, price:2}
 ];
 
+
+const DISTRICTS_BY_GOVERNORATE = {
+  'عمّان': ['لواء قصبة عمّان','لواء ماركا','لواء القويسمة','لواء الجامعة','لواء وادي السير','لواء ناعور','لواء سحاب','لواء الجيزة','لواء الموقر'],
+  'إربد': ['لواء قصبة إربد','لواء بني عبيد','لواء المزار الشمالي','لواء الرمثا','لواء الكورة','لواء بني كنانة','لواء الأغوار الشمالية','لواء الطيبة','لواء الوسطية'],
+  'الزرقاء': ['لواء قصبة الزرقاء','لواء الرصيفة','لواء الهاشمية'],
+  'البلقاء': ['لواء قصبة السلط','لواء عين الباشا','لواء الشونة الجنوبية','لواء دير علا','لواء الفحيص وماحص','لواء عيرا ويرقا'],
+  'المفرق': ['لواء قصبة المفرق','لواء البادية الشمالية','لواء البادية الشمالية الغربية','لواء الرويشد'],
+  'جرش': ['لواء قصبة جرش'],
+  'عجلون': ['لواء قصبة عجلون','لواء كفرنجة'],
+  'مادبا': ['لواء قصبة مادبا','لواء ذيبان'],
+  'الكرك': ['لواء قصبة الكرك','لواء المزار الجنوبي','لواء الأغوار الجنوبية','لواء القصر','لواء فقوع','لواء القطرانة','لواء عي'],
+  'الطفيلة': ['لواء قصبة الطفيلة','لواء بصيرا','لواء الحسا'],
+  'معان': ['لواء قصبة معان','لواء الشوبك','لواء البترا','لواء الحسينية'],
+  'العقبة': ['لواء قصبة العقبة','لواء القويرة']
+};
+
 const state = { selected: new Map(), lastOrder:null };
 const $ = (id)=>document.getElementById(id);
 const gradeLabel = (g)=> g <= 10 ? `الصف ${g}` : (g === 11 ? 'الصف الحادي عشر' : 'الصف الثاني عشر');
+function updateDistrictOptions(){
+  const gov = $('governorate').value;
+  const select = $('district');
+  const districts = DISTRICTS_BY_GOVERNORATE[gov] || [];
+  select.innerHTML = districts.length ? '<option value="">اختر اللواء</option>' + districts.map(d=>`<option>${escapeHtml(d)}</option>`).join('') : '<option value="">اختر المحافظة أولًا</option>';
+  select.disabled = !districts.length;
+}
 const keyOf = (m,g)=>`${m}__${g}`;
 
 function normalizePhone(v){
@@ -329,8 +343,8 @@ function updateSummary(){
 }
 function clearAll(){
   state.selected.clear(); state.lastOrder = null;
-  ['teacherName','phone','school','directorate','district','deliveryAddress','notes','searchInput'].forEach(id=>$(id).value='');
-  $('governorate').value=''; $('semester').selectedIndex=0;
+  ['teacherName','phone','school','principalName','directorate','deliveryAddress','notes','searchInput'].forEach(id=>$(id).value='');
+  $('governorate').value=''; updateDistrictOptions(); $('semester').selectedIndex=0;
   $('resultBox').classList.remove('show'); $('errorBox').classList.remove('show');
   $('whatsappBtn').classList.add('hidden'); $('copyOrderBtn').classList.add('hidden');
   renderMaterials(); updateSummary();
@@ -344,6 +358,7 @@ function buildOrder(){
     teacherName: $('teacherName').value.trim(),
     phone: normalizePhone($('phone').value),
     school: $('school').value.trim(),
+    principalName: $('principalName').value.trim(),
     directorate: $('directorate').value.trim(),
     governorate: $('governorate').value,
     district: $('district').value.trim(),
@@ -359,6 +374,10 @@ function buildOrder(){
 function validate(order){
   if(!order.teacherName) return 'يرجى كتابة اسم المعلم/المعلمة.';
   if(!order.phone || order.phone.length < 9) return 'يرجى كتابة رقم هاتف صحيح.';
+  if(!order.principalName) return 'يرجى كتابة اسم مدير المدرسة.';
+  if(!order.governorate) return 'يرجى اختيار المحافظة.';
+  if(!order.district) return 'يرجى اختيار اللواء.';
+  if(!order.deliveryAddress) return 'يرجى كتابة عنوان التوصيل.';
   if(!order.selections.length) return 'يرجى اختيار مادة واحدة على الأقل.';
   return '';
 }
@@ -424,6 +443,7 @@ function makeWhatsappMessage(order){
   lines.push(`الاسم: ${order.teacherName}`);
   lines.push(`رقم الهاتف: ${order.phone}`);
   if(order.school) lines.push(`المدرسة: ${order.school}`);
+  lines.push(`اسم مدير المدرسة: ${order.principalName}`);
   if(order.directorate) lines.push(`المديرية: ${order.directorate}`);
   if(order.governorate) lines.push(`المحافظة: ${order.governorate}`);
   if(order.district) lines.push(`اللواء: ${order.district}`);
@@ -460,14 +480,9 @@ $('clearAllBtn').addEventListener('click',clearAll);
 $('clearSelectionsTop').addEventListener('click',()=>{state.selected.clear(); renderMaterials(); updateSummary();});
 $('whatsappBtn').addEventListener('click',openWhatsapp);
 $('copyOrderBtn').addEventListener('click',copyOrder);
-$('printBtn').addEventListener('click',()=>window.print());
-$('selectEnglishAll').addEventListener('click',()=>{
-  const m = MATERIALS.find(x=>x.name==='اللغة الإنجليزية');
-  m.grades.forEach(g=>state.selected.set(keyOf(m.name,g),{material:m.name,grade:g,gradeLabel:gradeLabel(g),price:m.price}));
-  renderMaterials(); updateSummary();
-});
+$('governorate').addEventListener('change',updateDistrictOptions);
 
-renderMaterials(); updateSummary();
+updateDistrictOptions(); renderMaterials(); updateSummary();
 </script>
 </body>
 </html>
