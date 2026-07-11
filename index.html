@@ -125,6 +125,7 @@
       <div class="logo" aria-label="شعار"><div class="mark"></div></div>
       <div>
         <h1>حجز التحضير الإلكتروني</h1>
+        <p class="hero-subtitle">للصفوف من الرابع إلى الثاني ثانوي، واللغة الإنجليزية من الصف الأول إلى الثاني ثانوي</p>
       </div>
       <div class="price-card">
         <strong id="heroTotal">0</strong>
@@ -141,10 +142,10 @@
           </div>
           <div class="body">
             <div class="form-grid">
-              <div class="field"><label>اسم المعلم/المعلمة *</label><input id="teacherName" autocomplete="name" placeholder="اكتب الاسم الكامل"></div>
+              <div class="field"><label>اسم المعلم/المعلمة *</label><input id="teacherName" name="teacherName" autocomplete="name" required placeholder="اكتب الاسم الكامل"></div>
               <div class="field"><label>رقم الهاتف *</label><input id="phone" inputmode="tel" placeholder="07xxxxxxxx"></div>
               <div class="field"><label>المدرسة</label><input id="school" placeholder="اختياري"></div>
-              <div class="field"><label>اسم مدير المدرسة *</label><input id="principalName" placeholder="اكتب اسم مدير المدرسة"></div>
+              <div class="field"><label>اسم مدير المدرسة *</label><input id="principalName" name="principalName" autocomplete="off" required placeholder="اكتب اسم مدير المدرسة"></div>
               <div class="field"><label>المديرية</label><input id="directorate" placeholder="اختياري"></div>
               <div class="field"><label>الفصل الدراسي</label><select id="semester" aria-label="الفصل الدراسي"><option selected>الفصل الدراسي الأول</option></select></div>
               <div class="field"><label>المحافظة *</label><select id="governorate"><option value="">اختر المحافظة</option><option>عمّان</option><option>إربد</option><option>الزرقاء</option><option>البلقاء</option><option>المفرق</option><option>جرش</option><option>عجلون</option><option>مادبا</option><option>الكرك</option><option>الطفيلة</option><option>معان</option><option>العقبة</option></select></div>
