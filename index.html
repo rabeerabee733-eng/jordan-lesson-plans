@@ -142,16 +142,16 @@
           </div>
           <div class="body">
             <div class="form-grid">
-              <div class="field"><label>اسم المعلم/المعلمة *</label><input id="teacherName" name="teacherName" autocomplete="name" required placeholder="اكتب الاسم الكامل"></div>
-              <div class="field"><label>رقم الهاتف *</label><input id="phone" inputmode="tel" placeholder="07xxxxxxxx"></div>
-              <div class="field"><label>المدرسة</label><input id="school" placeholder="اختياري"></div>
-              <div class="field"><label>اسم مدير المدرسة *</label><input id="principalName" name="principalName" autocomplete="off" required placeholder="اكتب اسم مدير المدرسة"></div>
-              <div class="field"><label>المديرية</label><input id="directorate" placeholder="اختياري"></div>
+              <div class="field"><label for="teacherName">اسم المعلم/المعلمة *</label><input id="teacherName" name="teacherName" autocomplete="name" required maxlength="120" placeholder="اكتب الاسم الكامل"></div>
+              <div class="field"><label for="phone">رقم الهاتف *</label><input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" required maxlength="14" pattern="(?:\+?962|0)?7[0-9]{8}" placeholder="07xxxxxxxx"></div>
+              <div class="field"><label for="school">المدرسة</label><input id="school" maxlength="160" placeholder="اختياري"></div>
+              <div class="field"><label for="principalName">اسم مدير المدرسة *</label><input id="principalName" name="principalName" autocomplete="off" required maxlength="120" placeholder="اكتب اسم مدير المدرسة"></div>
+              <div class="field"><label for="directorate">المديرية</label><input id="directorate" maxlength="120" placeholder="اختياري"></div>
               <div class="field"><label>الفصل الدراسي</label><select id="semester" aria-label="الفصل الدراسي"><option selected>الفصل الدراسي الأول</option></select></div>
-              <div class="field"><label>المحافظة *</label><select id="governorate"><option value="">اختر المحافظة</option><option>عمّان</option><option>إربد</option><option>الزرقاء</option><option>البلقاء</option><option>المفرق</option><option>جرش</option><option>عجلون</option><option>مادبا</option><option>الكرك</option><option>الطفيلة</option><option>معان</option><option>العقبة</option></select></div>
-              <div class="field"><label>اللواء *</label><select id="district" disabled><option value="">اختر المحافظة أولًا</option></select></div>
-              <div class="field span-2"><label>عنوان التوصيل *</label><input id="deliveryAddress" placeholder="الحي، الشارع، أقرب معلم"></div>
-              <div class="field span-2"><label>ملاحظات</label><input id="notes" placeholder="أي ملاحظة خاصة بالطلب"></div>
+              <div class="field"><label for="governorate">المحافظة *</label><select id="governorate" required><option value="">اختر المحافظة</option><option>عمّان</option><option>إربد</option><option>الزرقاء</option><option>البلقاء</option><option>المفرق</option><option>جرش</option><option>عجلون</option><option>مادبا</option><option>الكرك</option><option>الطفيلة</option><option>معان</option><option>العقبة</option></select></div>
+              <div class="field"><label for="district">اللواء *</label><select id="district" required disabled><option value="">اختر المحافظة أولًا</option></select></div>
+              <div class="field span-2"><label for="deliveryAddress">عنوان التوصيل *</label><input id="deliveryAddress" required maxlength="300" autocomplete="street-address" placeholder="الحي، الشارع، أقرب معلم"></div>
+              <div class="field span-2"><label for="notes">ملاحظات</label><input id="notes" maxlength="800" placeholder="أي ملاحظة خاصة بالطلب"></div>
             </div>
             <div class="notice" style="margin-top:14px">تنبيه مهم: اسم المعلم واسم مدير المدرسة سيُطبعان على الملفات كما تم إدخالهما في الموقع، لذلك يرجى كتابتهما بدقة قبل تأكيد الطلب.</div>
           </div>
@@ -259,7 +259,7 @@ const DISTRICTS_BY_GOVERNORATE = {
   'العقبة': ['لواء قصبة العقبة','لواء القويرة']
 };
 
-const state = { selected: new Map(), lastOrder:null };
+const state = { selected: new Map(), lastOrder:null, clientRequestId:null, requestFingerprint:null, submitting:false };
 const $ = (id)=>document.getElementById(id);
 const gradeLabel = (g)=> g <= 10 ? `الصف ${g}` : (g === 11 ? 'الصف الحادي عشر' : 'الصف الثاني عشر');
 function updateDistrictOptions(){
@@ -286,13 +286,10 @@ function getAppUrl(){
   if(WEB_APP_URL && !WEB_APP_URL.includes('ضع_رابط')) return WEB_APP_URL.trim();
   return location.href.split('?')[0];
 }
-function makeOrderNumber(){
-  const d = new Date();
-  const pad=n=>String(n).padStart(2,'0');
-  const y=d.getFullYear(), m=pad(d.getMonth()+1), day=pad(d.getDate());
-  const hh=pad(d.getHours()), mm=pad(d.getMinutes()), ss=pad(d.getSeconds());
-  const r=Math.floor(Math.random()*900+100);
-  return `TH-${y}${m}${day}-${hh}${mm}${ss}-${r}`;
+function makeClientRequestId(){
+  if(window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID().replace(/-/g,'_');
+  const random = Math.random().toString(36).slice(2);
+  return `req_${Date.now()}_${random}`;
 }
 
 function renderMaterials(){
@@ -355,7 +352,7 @@ function updateSummary(){
   }
 }
 function clearAll(){
-  state.selected.clear(); state.lastOrder = null;
+  state.selected.clear(); state.lastOrder = null; state.clientRequestId = null; state.requestFingerprint = null; state.submitting = false;
   ['teacherName','phone','school','principalName','directorate','deliveryAddress','notes','searchInput'].forEach(id=>$(id).value='');
   $('governorate').value=''; updateDistrictOptions(); $('semester').selectedIndex=0;
   $('resultBox').classList.remove('show'); $('errorBox').classList.remove('show');
@@ -367,8 +364,7 @@ function buildOrder(){
   const materialsTotal = selections.reduce((s,x)=>s+x.price,0);
   const deliveryFee = getDeliveryFee($('governorate').value);
   const total = materialsTotal + deliveryFee;
-  return {
-    orderNumber: makeOrderNumber(),
+  const order = {
     service: SERVICE_NAME,
     teacherName: $('teacherName').value.trim(),
     phone: normalizePhone($('phone').value),
@@ -389,10 +385,17 @@ function buildOrder(){
     total,
     createdAt: new Date().toISOString()
   };
+  const fingerprint = JSON.stringify({...order, createdAt:''});
+  if(state.requestFingerprint !== fingerprint){
+    state.requestFingerprint = fingerprint;
+    state.clientRequestId = makeClientRequestId();
+  }
+  order.clientRequestId = state.clientRequestId;
+  return order;
 }
 function validate(order){
   if(!order.teacherName) return 'يرجى كتابة اسم المعلم/المعلمة.';
-  if(!order.phone || order.phone.length < 9) return 'يرجى كتابة رقم هاتف صحيح.';
+  if(!/^07\d{8}$/.test(order.phone)) return 'يرجى كتابة رقم هاتف أردني صحيح مثل 0791234567.';
   if(!order.principalName) return 'يرجى كتابة اسم مدير المدرسة.';
   if(!order.governorate) return 'يرجى اختيار المحافظة.';
   if(!order.district) return 'يرجى اختيار اللواء.';
@@ -400,10 +403,16 @@ function validate(order){
   if(!order.selections.length) return 'يرجى اختيار مادة واحدة على الأقل.';
   return '';
 }
-function showError(msg){ const e=$('errorBox'); e.textContent=msg; e.classList.add('show'); }
+function showError(msg){ const e=$('errorBox'); e.textContent=msg; e.classList.add('show'); e.setAttribute('role','alert'); e.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 function hideError(){ $('errorBox').classList.remove('show'); }
 function showResult(order, serverMsg){
   state.lastOrder = order;
+  state.clientRequestId = null;
+  state.requestFingerprint = null;
+  $('materialsTotalBox').textContent = order.materialsTotal;
+  $('deliveryFeeBox').textContent = order.deliveryFee;
+  $('totalBox').textContent = order.total;
+  $('heroTotal').textContent = order.total;
   const box = $('resultBox');
   box.innerHTML = `تم حفظ الطلب بنجاح.<br>رقم الطلب: <span class="order-no">${escapeHtml(order.orderNumber)}</span><br>${serverMsg ? escapeHtml(serverMsg) : ''}`;
   box.classList.add('show');
@@ -412,28 +421,31 @@ function showResult(order, serverMsg){
 }
 
 async function submitOrder(){
+  if(state.submitting) return;
   hideError();
   const order = buildOrder();
   const err = validate(order);
   if(err){ showError(err); return; }
   const btn = $('submitBtn');
+  state.submitting = true;
   btn.textContent='جارٍ حفظ الطلب...'; btn.disabled=true; document.body.classList.add('loading');
   try{
-    const res = await submitJsonp(order);
+    let res;
+    try {
+      res = await submitPost(order);
+    } catch (postError) {
+      res = await submitJsonp(order);
+    }
     if(!res || res.ok === false) throw new Error(res && res.message ? res.message : 'تعذر حفظ الطلب.');
     if(res.orderNumber) order.orderNumber = res.orderNumber;
     if(typeof res.materialsTotal === 'number') order.materialsTotal = res.materialsTotal;
     if(typeof res.deliveryFee === 'number') order.deliveryFee = res.deliveryFee;
     if(typeof res.total === 'number') order.total = res.total;
     showResult(order,'تم تسجيله في ملف الطلبات.');
-  }catch(err1){
-    try{
-      await submitFetchFallback(order);
-      showResult(order,'تم إرسال الطلب للحفظ.');
-    }catch(err2){
-      showError('لم يتم حفظ الطلب. تأكد من رابط Apps Script ومن اتصال الإنترنت، ثم أعد المحاولة.');
-    }
+  }catch(error){
+    showError(error && error.message ? error.message : 'لم يتم حفظ الطلب. تأكد من اتصال الإنترنت ثم أعد المحاولة.');
   }finally{
+    state.submitting = false;
     btn.textContent='تأكيد الحجز وحفظ الطلب'; btn.disabled=false; document.body.classList.remove('loading');
   }
 }
@@ -453,9 +465,17 @@ function submitJsonp(order){
     document.body.appendChild(script);
   });
 }
-async function submitFetchFallback(order){
-  const res = await fetch(getAppUrl(), { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(order) });
-  try{ const data = await res.json(); if(data && data.ok===false) throw new Error(data.message || 'error'); }catch(e){}
+async function submitPost(order){
+  const response = await fetch(getAppUrl(), {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(order),
+    redirect:'follow'
+  });
+  if(!response.ok) throw new Error(`تعذر الاتصال بخدمة الحفظ (${response.status}).`);
+  const data = await response.json();
+  if(!data || data.ok === false) throw new Error(data && data.message ? data.message : 'رفض الخادم حفظ الطلب.');
+  return data;
 }
 function makeWhatsappMessage(order){
   const lines = [];
@@ -493,7 +513,14 @@ function openWhatsapp(){
 }
 async function copyOrder(){
   if(!state.lastOrder) return;
-  await navigator.clipboard.writeText(state.lastOrder.orderNumber);
+  const value = state.lastOrder.orderNumber;
+  if(navigator.clipboard && window.isSecureContext){
+    await navigator.clipboard.writeText(value);
+  }else{
+    const area=document.createElement('textarea');
+    area.value=value; area.style.position='fixed'; area.style.opacity='0';
+    document.body.appendChild(area); area.select(); document.execCommand('copy'); area.remove();
+  }
   $('copyOrderBtn').textContent='تم نسخ رقم الطلب';
   setTimeout(()=>$('copyOrderBtn').textContent='نسخ رقم الطلب',1600);
 }
